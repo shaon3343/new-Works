@@ -1,0 +1,14 @@
+SELECT * ,
+ distInfo.DistributorName as DistName , 
+ payst.paymement_stat as paymentStatus
+ FROM [dbo].[tblNCSTxnInformation] AS tranInfo 
+ INNER JOIN [dbo].[NCS_Distributor_Info] as distInfo 
+	ON distInfo.DistributorCode=tranInfo.CustCode 
+ INNER JOIN [CBC].[dbo].[NCS_Payment_Status_Code] as payst 
+	ON payst.pay_stat_id=tranInfo.paymentStatus
+	WHERE 
+	CustCode IN(SELECT DistributorCode FROM [dbo].[NCS_Distributor_Info] WHERE [Merchant_Id]=1)
+	AND
+	paymentStatus IN (0, 1, 2, 3, 4)
+	AND
+	ReceivingDate between '2015-04-19 17:27' AND '2015-04-19 17:27'
