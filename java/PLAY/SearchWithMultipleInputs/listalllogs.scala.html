@@ -1,0 +1,387 @@
+@(list:java.util.List[models.CdmLogFile])
+@import FileUtils.CdmStatusCode
+@import FileUtils.Constants
+@import java.text.SimpleDateFormat
+@import models.PaymentDescription
+@import models.Cdmregis
+@import controllers.Application
+@import models.Area
+@main("List of all CDM LOG files") {
+	
+	<script>
+	function deleteData(valueOfData){
+		$.ajax({
+			url:"@routes.Application.discardLogs()",
+			type : 'POST',
+			data: { keyValue: valueOfData},
+            success:function(result){
+          		$('#msg').val("msg");
+			}}); 
+	}
+   </script> 
+	 
+	<script type="text/javascript" >
+	function downloadExcel(){
+		document.getElementById('searchlogfiles').action="@routes.UserDownload.downloadExcel()";
+		document.getElementById('searchlogfiles').submit();
+		
+	}
+	function search(){
+		document.getElementById('searchlogfiles').action="@routes.Application.searchLogs()";
+		document.getElementById('searchlogfiles').submit();
+	} 
+	function downloadPdf(){
+		document.getElementById('searchlogfiles').action="@routes.UserDownload.downloadPdf()";
+		document.getElementById('searchlogfiles').submit();
+	}
+	</script>
+
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/demo_table_jui.css")" />
+ 
+<!-- <link rel="stylesheet" href="@routes.Assets.at("stylesheets/demo_table.css")" /> -->
+	
+<body class="ptrn_a grdnt_a mhover_a">
+  <div class="container">
+            <div class="row">
+                <div class="twelve columns">
+                    <div class="box_c">
+                        <div class="box_c_heading cf">
+                            <div class="box_c_ico"><img src="@routes.Assets.at("images/16-List.png")" alt="" /></div>
+                            <p>SEARCH LOG FILES </p>
+                        </div>
+                        <div class="box_c_content form_a">
+                             <form action="@routes.Application.searchLogs()" id="searchlogfiles" method="POST" class="nice validate custom">
+                                 <!-- <form method="POST" class="nice validate custom"> -->
+                                 <!-- <form action="http://10.100.17.120:9000/searchorcreate" method="POST" class="nice validate custom"> -->
+                                 
+                                   
+                                <div class="formRow">
+                                
+                                 <div class="elVal">
+                                        <ul class="block-grid three-up mobile">
+                                        	<input type="hidden" id="userid" name="userid" value="@session.get("userid")"> 
+                                            <li><label for="account_name"> ACCOUNT NAME</label><input type="text" class="input-text" id="account_name" name="account_name" value="@flash.get("acount_name")"/></li>
+                                             <li><label for="account_number">ACCOUNT NUMBER</label><input type="text" class="input-text" id="account_number" name="account_number" value="@flash.get("account_number")"/></li>
+                                             <li><label for="envelop_number">ENVELOP NUMBER</label><input type="text" class="input-text" id="envelop_number" name="envelop_number" value="@flash.get("envelop_number")"/></li>
+                                        </ul>
+                                    </div>
+                                   
+                                </div>
+                                
+                                 <div class="formRow">
+                                
+                                 <div class="elVal">
+                                        <ul class="block-grid three-up">
+                                            <li><label for="from_date"> FROM DATE</label><input type="text" class="input-text" id="fromDate" name="from_date" autocomplete="off" value="@flash.get("from_date")"/></li>
+                                             <li><label for="to_date">TO DATE</label><input type="text" class="input-text" id="toDate" name="to_date" autocomplete="off" value="@flash.get("to_date")"/></li>
+                                            <!--  <li><label for="cdm_id">CDM ID</label><input type="text" class="input-text" id="cdm_id" name="cdmid" value=""/></li> -->
+                                           <li> <label >CDM ID</label>
+											<select id="cdm_id" name="cdmid" >
+											<option value=""> Please Select </option>
+											 @for(cdmIdList<-Cdmregis.findAllCdmIdByUserId(Long.parseLong(session.get("userid")))){
+											<option @if(Application.compEqual(cdmIdList.id,flash.get("cdm_id"))){selected} value="@cdmIdList.id">@cdmIdList.cdm_id</option>
+											}
+									
+											
+											</select>
+											</li>
+                                        </ul>
+                                    </div>
+                                   
+                                </div>
+                                
+                                <div class="formRow">
+                                
+                                 <div class="elVal">
+                                        <ul class="block-grid three-up mobile">
+                                            <!-- <li><label for="pay_mode">PAY MODE</label><input type="text" class="input-text" id="pay_mode" name="pay_mode" value=""/></li> -->
+                                            
+						 				     <li><label for="ref_id">REFERENCE ID</label><input type="text" class="input-text" id="ref_id" name="ref_id" value="@flash.get("ref_id")"/></li>
+									
+                                             <li><label for="amount_min">AMOUNT MIN</label><input type="text" class="input-text" id="amount_min" name="amount_min" value="@flash.get("amount_min")"/></li>
+                                             <li><label for="amount_max">AMOUNT MAX</label><input type="text" class="input-text" id="amount_max" name="amount_max" value="@flash.get("amount_max")"/></li>
+                                        </ul>
+                                    </div>
+                                   
+                                </div>
+                                
+                                 <div class="formRow">
+                                
+                                 <div class="elVal">
+                                        <ul class="block-grid three-up mobile">
+                                            <!-- <li><label for="status">STATUS</label><input type="text" class="input-text" id="status" name="status" value=""/></li> -->
+                                        	
+                                        	<li><label for="status">PAYMENT STATUS</label>
+                                        	<select id="payment_status" name="payment_status">
+											<option  value="">Please Select</option>
+										 	<option @if(flash.get("payment_status")=="1"){selected} value=1>processing</option>
+											<option @if(flash.get("payment_status")=="2"){selected} value=2>pending</option>
+											<option @if(flash.get("payment_status")=="3"){selected} value=3>modified</option>
+											<option @if(flash.get("payment_status")=="4"){selected} value=4>approved</option>
+											<option @if(flash.get("payment_status")=="5"){selected} value=5>Downloaded TTUM file</option>
+											<option @if(flash.get("payment_status")=="6"){selected} value=6>Transaction error</option>
+											<option @if(flash.get("payment_status")=="7"){selected} value=7>Declined</option>
+											<option @if(flash.get("payment_status")=="8"){selected} value=8>Sent cheque for processing</option>
+											<option @if(flash.get("payment_status")=="9"){selected} value=9>Discard request by Maker</option>
+											<option @if(flash.get("payment_status")=="10"){selected} value=10>Discarded log</option>
+											<option @if(flash.get("payment_status")=="11"){selected} value=11>Declined Discarded log</option>
+										</select></li> 
+                                        	
+                                            <li><label for="pay_mode">PAY MODE</label>
+										<select id="pay_mode" name="pay_mode">
+											<option value=""> Please Select </option>
+											<option @if(flash.get("pay_mode")=="Cash"){selected} value="Cash">Cash</option>
+											<option @if(flash.get("pay_mode")=="Cheque"){selected} value="Cheque">Cheque</option>
+										</select> </li>
+										      <li><label for="pay_mode">CDM AREA</label>
+										<select id="cdm_area" name="cdm_area">
+										<option value=""> Please Select </option>
+										<option 
+										@if(flash.get("cdm_area")!=null && !flash.get("cdm_area").equals("")){
+										@if( Long.parseLong(flash.get("cdm_area"))==Cdmregis.findCdmAreaIdByUserId(Long.parseLong(session.get("userid")))){selected}}
+										value=@Cdmregis.findCdmAreaIdByUserId(Long.parseLong(session.get("userid")))>@Cdmregis.findCdmAreaNameByUserId(Long.parseLong(session.get("userid")))
+										</option>
+										</select> </li>
+								 </ul>
+								 
+                                   </div>  
+                                    </div>    
+                               
+                                     <div class="formRow">
+                                     <button type="submit" class="button mini nice blue" onclick="search()">SEARCH LOGS</button>
+                                    
+                                     <button type="button" class="button mini nice blue" onclick="downloadExcel()">DOWNLOAD EXCEL</button>
+                                     
+                                   
+                                     <button type="button" class="button mini nice blue" onclick="downloadPdf()">DOWNLOAD PDF</button>
+                                    
+                                    <!-- <a href="@routes.Application.searchLogs()"><button class="button small nice blue">SEARCH LOGS</button></a> -->
+                                    <!-- <input type="submit" name="action" class "button small nice red" value="save" />
+                                    <input type="submit" name="search" value="SEARCH LOGS" class="button small nice blue"> -->
+                                    </div>
+                                 
+                                       
+                               
+                              </form>
+                            </div>
+                       </div>
+                    </div>
+                 </div>
+              
+          <!--  -->    
+           
+
+<div class="row">
+  <div class="twelve columns">
+  <div class="box_c">
+  <div class="box_c_heading cf box_actions">
+       <a name="listlogs"><p>LIST OF ALL LOG FILES</p></a>
+  </div>
+  <div class="box_c_content">
+
+	
+<div class="sepH_c" id="checkboxlist" name="MyDiv">
+ 		<form name="formName" action="" id="deleteForm" method="POST" class="nice validate custom">
+ 				
+ 				
+					            <div  style="color:#0000FF; background-color:#dcdcdc;   font-weight:bold; " align="center">
+								@if(flash.contains("msg")) {
+									    <p id="M" class="success">
+									        @flash.get("msg")
+									    </p>
+									}
+								</div> 
+				<table cellpadding="0" cellspacing="0" border="0" class="display mobile_dt2" id="dt2">
+						<thead>
+						<tr>				
+											@if(session.get("usertype")=="2"){
+											<th class="center">Check</th>
+											}
+											<th >SERIAL NO</th>
+											<th class="essential">CUSTOMER NAME</th>
+											<th class="essential">ACCOUNT NUMBER</th>
+											<th class="essential">ACCOUNT TYPE</th>
+											<!-- <th class="center">ENVELOP NUMBER</th> -->
+											<!-- <th class="center">FETCH DATE</th>  -->
+
+											<th >PAY MODE</th>
+											<th >PAYMENT MODE</th>
+											<th >PAYMENT DESCRIPTION</th>
+											<th >PAYMENT STATUS</th>
+											<!--   <th class="center">CDM ID</th>  --> 
+											<th class="center">CDM AREA</th>
+											<th class="center">AMOUNT</th>
+											
+						</tr> 
+						</thead>
+						<tbody>
+									@for(log <- list) {
+										  <tr  class="odd gradeX">
+										   @if(session.get("usertype")=="2"){
+										  <td class="center"><input type="checkbox" NAME="checkBox" id="checkBox" class="chk" value=@log.id></td>
+										  }
+										  @if(session.get("usertype")=="3" && (log.payment_status==2  || log.payment_status==9 || log.payment_status==10)){
+											<td><a href="@routes.Application.logdetails(log.id)">@log.sl_no </a></td>
+											}else {@if(session.get("usertype")=="2" && ( log.payment_status==1 || log.payment_status==3 || log.payment_status==6 || log.payment_status==11 )){
+												<td><a href="@routes.Application.logdetails(log.id)">@log.sl_no </a></td>
+											}else{@if(session.get("usertype")=="1" || session.get("usertype")=="4"){
+												<td><a href="@routes.Application.logdetails(log.id)">@log.sl_no </a></td>
+												}else{
+												<td>@log.sl_no</td>
+											}}}
+											<td>@log.customer_name</td> 
+											<td>@log.account_number</td> 
+ 											<td>@log.account_type</td> 
+    
+											<!-- <td class="center">log.envelop_number</td> -->
+											<!-- <td class="center">if(log.fetch_date!=null){(new SimpleDateFormat(Constants.DATE_FORMAT).format(log.fetch_date))}  -->
+
+											<td class="center">@log.pay_mode</td>
+											<td>@CdmStatusCode.cdmLogPaymentMode(log.payment_mode)</td>
+											<td>@PaymentDescription.findDescbyId(log.payment_desc)</td>
+											<td style="@if(log.payment_status==3 || log.payment_status==6 || log.payment_status==9 || log.payment_status==10 || log.payment_status==11){color: red;} @if(log.payment_status==4 || log.payment_status==5 || log.payment_status==8 ){color:green}">
+											@CdmStatusCode.cdmLogPaymentStatus(log.payment_status)
+											 </td>
+										<!--  	<td>Cdmregis.findCdmIdbyPrimaryid(log.cdm_id)</td> -->
+											<td>@Area.findAreaNameByPrimaryId(log.cdm_area)</td>
+											<td>@log.amount</td> 
+										  </tr>
+										}
+									</tbody> 
+									<div class="formRow">
+                                   <!--   <input disabled type="text" id="idLoc" name="idLoc" class="input-text" value=""/>  -->
+                                    
+                              <!--   <input  type="button" name="buttonClass" class="button small nice blue" id="buttonClass" onclick="test()" value="Delete Selected Logs"/>  -->
+                                    
+								</table>
+								 @if(session.get("usertype")=="2"){
+								<input  type="button" name="buttontest" class="button small nice blue" id="buttontest" onclick="test()" value="Delete Selected Logs"/>
+								}
+							  <!-- 	<input  type="button" name="someButton" class="someButton" id="someButton"  value="JQuerytest"/>
+								
+								<input  type="text" id="testId"/>  -->
+								
+								<script type="text/javascript" >
+
+
+								function test()
+								{
+									 var x;
+									    if (confirm("ARE YOU SUE TO DELETE THESE LOGS!") == true) {
+									        x = "You pressed OK!";
+									       // alert(x); 
+									     
+	
+									
+									var checkedIDList = [];
+									var table=document.getElementById("dt2");
+									var rowCount = table.rows.length; 
+									var checkCount=0;   
+										
+									for (var i = 1; i < rowCount ; i++) 
+										{    
+									     var row = table.rows[i];
+									     
+									     var checkbox=row.getElementsByTagName('td')[0].getElementsByTagName('input')[0];								     									     
+									     	if(checkbox.checked)
+									     	{	
+											deleteData(checkbox.value);	     				
+										   } 
+										} 
+									
+									location.reload();
+									//document.getElementById("msg").innerHTML = "SELECTED CDM LOGS HAS BEEN DISCARED SUCCESSFULLY";
+									alert("SELECTED CDM LOGS HAS BEEN DISCARED SUCCESSFULLY"); 
+								}else{
+								        x = "You pressed Cancel!";
+								        //alert(x); 
+								        
+								        //location.reload();
+								        //document.getElementById("M").innerHTML = "SELECTED CDM LOGS NOT DISCARED";
+									    }
+							    }	  
+															
+								
+								function testt()
+								{
+
+									
+									var checkedIDList = [];
+									var table=document.getElementById("dt2");
+									var rowCount = table.rows.length; 
+									var checkCount=0;   
+										
+									for (var i = 1; i < rowCount ; i++) 
+										{    
+									     var row = table.rows[i];
+									     
+									     var checkbox=row.getElementsByTagName('td')[0].getElementsByTagName('input')[0];								     									     
+									     	if(checkbox.checked)
+									     	{	
+									     		
+									
+											deleteData(checkbox.value);
+
+											//checkedIDList[checkCount]=checkbox.value;								     		
+								     		//checkedIDList[i]=checkbox.value;
+								     		//alert(checkedIDList[checkCount]);
+								     		
+								     			//checkedIDList[checkCount]=checkbox.value;								     		
+								     		//checkedIDList[i]=checkbox.value;
+								     		//alert(checkedIDList[checkCount]);
+								     		
+										//	var valuee=checkedIDList[checkCount];
+									     
+										//	var valuee=checkedIDList[checkCount];
+										//	deleteData(valuee);
+									   //  	checkCount++;									     				
+										   } 
+										} 
+
+									
+									//document.getElementById("msg").innerHTML = "Deleted";
+									location.reload();
+									
+									alert("SELECTED CDM LOGS HAS BEEN DISCARED SUCCESSFULLY");
+									//print all list
+				                     // alert(checkedIDList);          
+				                        
+				                    //print each item in the list     
+							    }	  
+							      
+								</script> 
+								
+								<!--	for(var i=0; i<checkedIDList.length; i++) 
+									{
+										alert(checkedIDList[checkCount]);
+										var param="routes.Application.deleteLogs("+checkedIDList[i]+")";
+										document.getElementById('deleteForm').action=param;									
+										document.getElementById('deleteForm').submit();
+									}
+ 
+								-->	
+							</form>	 
+							</div> 
+  
+							 
+			<!--  <form action="at routes.CreateFile.doSpreadsheet()"  method="POST">
+	
+    	<p><button type="submit"> Create Spreadsheet </button></p>
+    	
+    </form> -->
+ 
+				</div> 
+			</div>
+		</div>
+		</div>
+		
+		</div>
+		<div class="sw_width">
+			<img class="sw_full" title="switch to full width" alt="" src="img/blank.gif" />
+			<img style="display:none" class="sw_fixed" title="switch to fixed width (980px)" alt="" src="img/blank.gif" />
+		</div>
+		<script src="@routes.Assets.at("javascripts/jquery.min.js")"></script>
+		</body>
+		
+		
+}
