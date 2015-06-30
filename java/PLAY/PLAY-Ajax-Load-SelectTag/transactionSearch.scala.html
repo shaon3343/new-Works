@@ -1,0 +1,268 @@
+@(tranList:java.util.List[models.transaction.Transaction])
+@import java.text.SimpleDateFormat
+@import utils.Constants
+@import models.bank.Bank
+@import models.bank.Branch
+@import models.transaction.TrnxnTypeCode
+@import models.currency.Currency
+@import utils.GetHeadersFooters
+@main("List of Transactions") {
+	
+	<script type="text/javascript" >
+	function downloadExcel(){
+		document.getElementById('searchTrans').action="@routes.UserDownload.downloadTranAsExcel()";
+		document.getElementById('searchTrans').submit();
+		
+	}
+	function search(){
+		document.getElementById('searchTrans').action="@routes.TransactionController.searchLogs()";
+		document.getElementById('searchTrans').submit();
+	} 
+	function downloadPdf(){
+		document.getElementById('searchTrans').action="@routes.UserDownload.downloadTranAsPdf()";
+		document.getElementById('searchTrans').submit();
+	}
+	</script>
+
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/demo_table_jui.css")" />
+ 
+	
+	<!--  TEST HTML START -->
+	
+	
+	<!--  TEST HTML END -->
+	 <div class="row">
+            <div class="col-md-12">
+
+                <div data-collapsed="0" class="panel">
+
+                    <div class="panel-heading" style="background:#7ACFCA;">
+                        <div class="panel-title">
+                            Search Transaction
+                        </div>
+                    </div>
+                   
+                  <form name="searchTrans" id="searchTrans" method="post">
+         
+					 <div class="row" style="margin-left:15px;margin-right:15px;">
+						 <div class="col-md-3 form-group" style="margin-top: 13px;margin-bottom: 7px;">
+                            	<label>Bank</label>
+                               	<select id="bank"  name="bank"  onChange="getBranchListByBank()" class="form-control"  style="color: #3DBBB4;">
+											<option value=""> Please Select </option>
+											@for(bank<-Bank.all()){
+												<option value="@bank.id" 
+												@if(flash.get("bank")!=null){
+													@if(flash.get("bank").equals(""+bank.id)){selected}												
+												
+												}
+												> @bank.name </option>
+												
+											}
+								 </select>
+                            </div>
+				
+                            <div class="col-md-3 form-group" style="margin-top: 13px;margin-bottom: 7px;">
+                             <label>Branch</label>
+                               <select id="branch" name="branch" class="form-control"  style="color: #3DBBB4;">
+											<option value="" > Please Select </option>
+											
+											@if(flash.get("bank")!=null){
+												
+												@for(br<-Branch.getBranchByBankId(flash.get("bank"))){
+													<option value="@br.id" 
+													@if(flash.get("branch")!=null){
+														@if(flash.get("branch").equals(""+br.id)){selected}	
+														
+													}
+													
+													 > @br.name </option>
+													
+												}	
+											}
+								</select>
+                            </div>
+				
+                            <div class="col-md-3 form-group" style="margin-top: 13px;margin-bottom: 7px;">
+                            <label>Origin</label>
+                               <select id="origin" name="origin" class="form-control"  style="color: #3DBBB4;">
+									<option value=""> Please Select </option>
+									<option value="T" @if(flash.get("origin")!=null){@if(flash.get("origin").equals("T")){selected}}> Treasury </option>
+									<option value="C"  @if(flash.get("origin")!=null){@if(flash.get("origin").equals("C")){selected}}> CBS </option>
+								</select>
+                            </div>
+                     
+                           
+						</div>
+					
+                     
+						 <div class="row" style="margin-left:15px;margin-right:15px;">
+						
+						 	 <div class="col-md-3 form-group" style="margin-top: 13px;margin-bottom: 7px;">
+                            <label> From Account</label>
+                            <input type="text" class="form-control" style="color: #3DBBB4;" id="from_acc" name="from_acc" autocomplete="off" value="@flash.get("from_acc")"/>
+                            </div>
+                          
+                              <div class="col-md-3 form-group" style="margin-top: 13px;margin-bottom: 7px;">
+                             <label>To Account</label>
+                              <input type="text" class="form-control" style="color: #3DBBB4;" id="to_acc" name="to_acc" autocomplete="off" value="@flash.get("to_acc")"/>
+                            </div>
+                       
+                            <div class="col-md-3 form-group" style="smargin-top: 13px;margin-bottom: 7px;margin-top:13px">
+                            	<label>Transaction Type</label>
+                              <select id="tranType" name="tranType" class="form-control" style="color: #3DBBB4;" >
+									<option value=""> Please Select </option>
+									 @for((id, name) <- TrnxnTypeCode.activeList){
+			      							 <option value="@id">@name</option>
+			    					 }
+							  </select>
+                            </div>
+                       
+                            
+						</div>
+					
+						<div class="row" style="margin-left:15px;margin-right:15px;">
+						 	                          
+                            <div class="col-md-3 form-group" style="margin-top: 13px;margin-bottom: 7px;">
+                            	<label>Currency</label>
+                              <select id="currency" name="currency" class="form-control" style="color: #3DBBB4;">
+									<option value=""> Please Select </option>
+									
+									 @for((id, name) <- Currency.activeList){
+			      							 <option value="@id">@name</option>
+			    					 }
+									
+							  </select>
+                            </div>
+                            
+						</div>
+						<div class="row" style="margin-left:15px;margin-right:15px;">
+						 <div class="col-md-3 form-group" style="margin-top: 13px;margin-bottom: 7px;">
+						 	<button  style="color: #3DBBB4;width:66%" class="form-control"  type="submit" class="button mini nice blue" onclick="search()">SEARCH TRANSACTIONS</button>
+						 </div>
+						 </div>
+	<!-- 				<div class="col-md-3 form-group">
+                                    
+                                    <button type="button" class="button mini nice blue" onclick="downloadExcel()">DOWNLOAD EXCEL</button>
+                         </div>
+                         <div class="col-md-3 form-group"> 
+                                    <button type="button" class="button mini nice blue" onclick="downloadPdf()">DOWNLOAD PDF</button>
+                               	
+                         </div>-->
+                       
+						</form>
+						
+					</div>
+
+            </div>
+        </div>
+
+  
+           <!--  -->    
+           <div class="row">
+            <div class="col-sm-12">
+                <section class="panel">
+                    <header class="panel-heading" style="background:#7ACFCA;">
+                       TRANSACTION LIST
+                       
+                    </header>
+                    <div class="panel-body">
+                    <div class="adv-table">
+                    <table cellpadding="0" cellspacing="0" border="0" class="display table table-bordered" id="liveTran">
+                    <thead style="color: #1FB5AD">
+                    <tr>
+                    
+                    @for(head<-GetHeadersFooters.getRtgsTranHeaders()){
+                    	<th>@head</th>
+                    	
+                    	
+                    }
+                    <!-- 
+                    
+                        <th>Tran Id</th>
+              	        <th>Origin</th>
+                        <th >From Bank</th>
+                        <th >From Branch</th>
+                   		<th >To Bank</th>
+                        <th >To Branch</th>
+                        <th >From Account Number</th>
+                       <th >From Account Name</th>
+                        <th >To Account Number</th>
+                        
+                        <th >To Account Name</th>
+                       
+                        <th >Amount</th>
+                        <th >Tran Date</th> -->
+                    </tr>
+                    </thead>
+                    <tbody>
+                      
+                    @for(tran<-tranList){
+                    	<tr class="gradeX">
+                        <td>@tran.id</td>
+                      	<td>@tran.ttc.name</td>
+                      	<td>@tran.fromBank.name</td>
+                      	<td>@tran.fromBranch.name</td>
+                      	<td>@tran.toBank.name</td>
+                      	<td>@tran.toBranch.name</td>
+                      	<td>@tran.fromAccountName</td>
+                      	<td>@tran.fromAccountNumber</td>
+                      	<td>@tran.toAccountName</td>
+                      	<td>@tran.toAccountNumber</td>
+                      	<td>@tran.trnxnAmount</td>
+                      	<td>@if(tran.status!=null){@tran.status.name}</td>
+                      	<td>@(new SimpleDateFormat(Constants.DATETIME).format(tran.trnxnDate))</td>
+                      	<td>@tran.approvedBy</td>
+                      	</tr>
+                      } 
+                    
+                   </tbody>
+                    </table>
+
+                    </div>
+                    </div>
+                </section>
+            </div>
+              <script  type="text/javascript" >
+		function getBranchListByBank(){
+
+			var bank = $("#bank option:selected").val();
+			  if(bank!=''){
+			     $.ajax({
+		                type : "GET",
+		                url : "@routes.TransactionController.getBranchListByBankId()",
+		                data : "bankId="+ bank,
+		                success : function(data) {
+		                	
+		                
+		                    
+		                    var result = $.parseJSON(data);
+							
+							
+							var select = document.getElementById("branch"); 
+							
+							$("#branch").empty();
+							var el = document.createElement("option");
+				    		el.textContent = "--Select Branch--";
+				    		el.value = "";
+				    		select.appendChild(el);
+				    
+							$.each(result, function(k, v) {
+							  	var el = document.createElement("option");
+						    	el.textContent = v;
+						    	el.value = k;
+						    	select.appendChild(el);
+							 });
+		               
+		                }
+		            });
+			  }
+		}
+		
+		$(document).ready(function() {
+			$('#liveTran').dataTable({
+      
+    		});
+		});
+		</script>
+        </div>
+}
