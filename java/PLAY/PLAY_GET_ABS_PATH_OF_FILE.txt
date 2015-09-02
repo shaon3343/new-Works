@@ -1,0 +1,3 @@
+ String bblLogoPath =  Play.application()
+                    .getFile(AppConst.BBL_LOGO_PATH)
+                    .getAbsolutePath();
