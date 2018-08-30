@@ -12,3 +12,41 @@ SELECT * ,
 	paymentStatus IN (0, 1, 2, 3, 4)
 	AND
 	ReceivingDate between '2015-04-19 17:27' AND '2015-04-19 17:27'
+	
+	
+	Stored Procedure Oracle: 
+	
+	
+  PROCEDURE get_user_by_email_role
+   (
+      user_email VARCHAR2,
+      user_role VARCHAR2,
+      valid_api_user OUT SYS_REFCURSOR
+   ) AS
+  BEGIN
+      open valid_api_user for
+        Select * from SSL_USERINFO u
+        inner join SSL_ROLES r on u.ROLE_ID = r.ID
+        where EMAIL=user_email AND IS_ACTIVE=1 AND r.ROLE_NAME = user_role;
+  END get_user_by_email_role;
+  
+  
+    
+ PROCEDURE check_api_user
+   (
+      user_in VARCHAR2,
+      psw_in VARCHAR2,
+      is_valid_api_user OUT INTEGER
+   ) 
+   AS
+    CURSOR user_check IS
+       Select * from SSL_USERINFO
+        inner join SSL_ROLES on SSL_USERINFO.ROLE_ID = SSL_ROLES.ID
+        where USERNAME=user_in AND PASSWORD=psw_in AND IS_ACTIVE=1 AND SSL_ROLES.ROLE_NAME='api-user';
+   BEGIN
+   is_valid_api_user := 0;
+      FOR u IN user_check
+      LOOP  
+        is_valid_api_user := 1;
+      END LOOP; 
+ END check_api_user;
